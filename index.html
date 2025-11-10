@@ -331,7 +331,7 @@
                 }, 2000); 
 
             } else {
-                // INCORRECT
+                // INCORRECT (FIXED LOGIC)
                 playIncorrectSound();
                 feedbackEl.textContent = "Oops! Try again.";
                 correctStreak = 0; // Only the streak resets
@@ -341,7 +341,12 @@
                 setTimeout(() => {
                     buttonElement.classList.remove('incorrect-answer');
                     feedbackEl.textContent = '';
-                    Array.from(letterButtonsContainer.children).forEach(btn => btn.disabled = false);
+                    
+                    // Explicitly re-enable all buttons for the next attempt
+                    const buttons = Array.from(letterButtonsContainer.children);
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                    });
                 }, 750);
             }
         }
