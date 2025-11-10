@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kindergarten Progressive Phonics Match (Final Fix)</title>
+    <title>Kindergarten Progressive Phonics Match (Robust Fix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -333,7 +333,7 @@
                 }, 2000); 
 
             } else {
-                // INCORRECT (FIXED LOGIC)
+                // INCORRECT (ROBUST FIX: Immediate re-enable after short visual flash)
                 playIncorrectSound();
                 feedbackEl.textContent = "Oops! Try again.";
                 
@@ -342,7 +342,7 @@
                 
                 buttonElement.classList.add('incorrect-answer');
                 
-                // After the error animation (750ms), re-enable the buttons
+                // After the error animation (200ms), re-enable the buttons
                 setTimeout(() => {
                     buttonElement.classList.remove('incorrect-answer');
                     feedbackEl.textContent = '';
@@ -352,7 +352,7 @@
                     buttons.forEach(btn => {
                         btn.disabled = false;
                     });
-                }, 750);
+                }, 200); // Very short delay for visual feedback only
             }
         }
 
