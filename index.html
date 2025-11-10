@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phonics Blend Builder (CCVC/CVCC)</title>
+    <title>Kindergarten Letter Match (Initial Sound)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
         body {
             font-family: 'Fredoka', sans-serif;
-            background-color: #ffe0b2; /* Light orange-peach background */
+            background-color: #ffccbc; /* Light peach/orange background */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,116 +20,99 @@
         .game-card {
             background-color: #ffffff;
             border-radius: 25px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-            max-width: 700px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 550px;
             width: 100%;
-            padding: 2.5rem;
+            padding: 2rem;
             text-align: center;
         }
         .score-display {
-            font-size: 1.35rem;
+            font-size: 1.3rem;
             font-weight: 700;
-            color: #ff9800; /* Orange color for score */
-            margin-bottom: 1.5rem;
+            color: #ff7043; /* Bright orange */
+            margin-bottom: 1rem;
         }
         .word-display {
-            min-height: 90px;
+            min-height: 60px;
         }
         .letter-slot {
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            width: 80px;
-            height: 80px;
-            border: 4px dashed #ffb74d; /* Dash border for empty state */
-            border-radius: 12px;
-            margin: 0 4px;
-            font-size: 3rem;
+            width: 90px;
+            height: 90px;
+            border: 5px solid #ff7043; /* Solid border for emphasis */
+            border-radius: 15px;
+            margin: 0 5px;
+            font-size: 4rem;
             font-weight: 700;
-            color: #5d4037;
-            transition: all 0.2s ease;
+            color: #4e342e;
+            background-color: #ffe0b2;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
         }
         .image-box {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 160px;
-            font-size: 9rem;
-            margin-bottom: 2rem;
+            height: 180px;
+            font-size: 10rem;
+            margin-bottom: 1.5rem;
             border-radius: 15px;
-            background-color: #fff9c4; /* Light yellow */
+            background-color: #fff8e1; /* Creamy yellow */
         }
         .letter-button {
             transition: all 0.1s ease;
             cursor: pointer;
             user-select: none;
-        }
-        .letter-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
+            width: 70px; /* Smaller, focused buttons */
+            height: 70px;
         }
         .correct-answer {
-            background-color: #81c784 !important; /* Pastel Green */
+            background-color: #a5d6a7 !important; /* Soft Green */
             border-color: #4caf50 !important;
             color: white !important;
         }
         .incorrect-answer {
-            background-color: #ef9a9a !important; /* Pastel Red */
+            background-color: #ef9a9a !important; /* Soft Red */
             border-color: #e53935 !important;
             color: white !important;
-        }
-        .difficulty-indicator {
-            padding: 0.3rem 0.6rem;
-            border-radius: 9999px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-top: -1.2rem;
-            display: inline-block;
         }
     </style>
 </head>
 <body>
     <div class="game-card">
-        <h1 class="text-4xl font-bold text-gray-800 mb-3">Phonics Blend Builder!</h1>
-        
-        <span id="difficultyIndicator" class="difficulty-indicator bg-orange-200 text-orange-700">EASY MODE</span>
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">What's the First Letter?</h1>
         
         <div id="scoreDisplay" class="score-display">Correct Streak: 0</div>
 
         <div id="imageBox" class="image-box text-center">
             </div>
 
-        <div id="wordDisplay" class="word-display flex justify-center gap-2 mb-10">
-            <div id="slot-0" class="letter-slot"></div>
-            <div id="slot-1" class="letter-slot"></div>
-            <div id="slot-2" class="letter-slot"></div>
-            <div id="slot-3" class="letter-slot"></div>
+        <div id="wordDisplay" class="word-display flex justify-center mb-8">
+            <div class="text-xl text-gray-500 mr-2 flex items-center">Starts with:</div>
+            <div id="slot-0" class="letter-slot">?</div>
+            <div class="text-xl text-gray-500 ml-2 flex items-center">...</div>
         </div>
 
         <div id="mx-auto flex justify-center">
-            <div id="letterButtons" class="flex justify-center gap-3 flex-wrap max-w-xl">
+            <div id="letterButtons" class="flex justify-center gap-3 flex-wrap max-w-lg">
                 </div>
         </div>
 
-        <p id="feedback" class="text-xl h-6 font-semibold mt-8 text-gray-600"></p>
+        <p id="feedback" class="text-xl h-6 font-semibold mt-6 text-gray-600"></p>
     </div>
 
     <script>
-        // --- Game Data: CCVC/CVCC Words and corresponding emojis ---
-        const blendWords = [
-            // CCVC (Consonant-Consonant-Vowel-Consonant)
-            { word: "STAR", emoji: "⭐" }, { word: "GRIP", emoji: "🤝" },
-            { word: "SWIM", emoji: "🏊" }, { word: "FLAG", emoji: "🚩" },
-            { word: "BLOC", emoji: "🧱" }, { word: "TRAM", emoji: "🚊" },
-            { word: "STEP", emoji: "👣" }, { word: "CLIP", emoji: "📎" },
-            // CVCC (Consonant-Vowel-Consonant-Consonant)
-            { word: "GIFT", emoji: "🎁" }, { word: "LAMP", emoji: "💡" },
-            { word: "TENT", emoji: "⛺" }, { word: "NEST", emoji: "🐦" },
-            { word: "BAND", emoji: "🎸" }, { word: "JUMP", emoji: "🤸" },
-            { word: "MILK", emoji: "🥛" }, { word: "DUSK", emoji: "🌆" }
+        // --- Game Data: CVC Words and corresponding emojis ---
+        const cvcWords = [
+            { word: "CAT", emoji: "🐈" }, { word: "DOG", emoji: "🐕" },
+            { word: "SUN", emoji: "☀️" }, { word: "MOP", emoji: "🧹" },
+            { word: "PIG", emoji: "🐖" }, { word: "JAM", emoji: "🍓" },
+            { word: "FAN", emoji: "🌬️" }, { word: "BED", emoji: "🛏️" },
+            { word: "CUP", emoji: "☕" }, { word: "LOG", emoji: "🪵" }
         ];
 
-        // --- Audio Setup using Tone.js ---
+        // --- Audio Setup (using existing Tone.js synths) ---
         const correctSynth = new Tone.Synth({
             oscillator: { type: "sine" },
             envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }
@@ -138,23 +121,26 @@
             oscillator: { type: "square" },
             envelope: { attack: 0.01, decay: 0.05, sustain: 0.01, release: 0.1 }
         }).toDestination();
-
+        function playCorrectSound() {
+            const now = Tone.now();
+            correctSynth.triggerAttackRelease("C5", "8n", now);
+        }
+        function playIncorrectSound() {
+            incorrectSynth.triggerAttackRelease("C3", "16n");
+        }
+        
         // --- Game State Variables ---
         let currentWord = {};
-        let currentLetterIndex = 0;
-        let correctStreak = 0; // Tracks consecutive correct words for difficulty
-        const WORD_LENGTH = 4; // Constant for 4-letter words
-        const DIFFICULTY_THRESHOLD = 7; // Switch to Hard Mode after 7 correct words
+        let correctStreak = 0;
+        const TARGET_INDEX = 0; // Always target the first letter
 
         const imageBox = document.getElementById('imageBox');
         const letterButtonsContainer = document.getElementById('letterButtons');
         const feedbackEl = document.getElementById('feedback');
         const scoreDisplayEl = document.getElementById('scoreDisplay');
-        const difficultyIndicatorEl = document.getElementById('difficultyIndicator');
+        const firstSlot = document.getElementById('slot-0');
 
-        // --- UTILITY FUNCTIONS ---
-        
-        // Fisher-Yates shuffle algorithm for array randomization
+        // Fisher-Yates shuffle algorithm
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -162,93 +148,59 @@
             }
         }
         
-        // Plays a success sound (chime)
-        function playCorrectSound() {
-            const now = Tone.now();
-            correctSynth.triggerAttackRelease("D5", "16n", now);
-            correctSynth.triggerAttackRelease("F#5", "16n", now + 0.1); 
-            correctSynth.triggerAttackRelease("A5", "8n", now + 0.2); 
-        }
-
-        // Plays an error sound (bloop)
-        function playIncorrectSound() {
-            incorrectSynth.triggerAttackRelease("G3", "16n");
-        }
-
-        // Updates the score and difficulty status
         function updateGameStatus() {
             scoreDisplayEl.textContent = `Correct Streak: ${correctStreak}`;
-            
-            if (correctStreak >= DIFFICULTY_THRESHOLD) {
-                difficultyIndicatorEl.textContent = "HARD MODE (More Letters!)";
-                difficultyIndicatorEl.classList.remove('bg-orange-200', 'text-orange-700');
-                difficultyIndicatorEl.classList.add('bg-red-300', 'text-red-800');
-            } else {
-                difficultyIndicatorEl.textContent = "EASY MODE";
-                difficultyIndicatorEl.classList.add('bg-orange-200', 'text-orange-700');
-                difficultyIndicatorEl.classList.remove('bg-red-300', 'text-red-800');
-            }
         }
 
         // Function to select a random word and set up the game
         function loadNewProblem() {
-            // Reset slots
-            for (let i = 0; i < WORD_LENGTH; i++) {
-                const slot = document.getElementById(`slot-${i}`);
-                slot.textContent = '';
-                slot.className = 'letter-slot'; // Reset classes
-            }
-
-            // Select a new random word, avoiding the previous word if possible
-            const availableWords = blendWords.filter(w => w.word !== currentWord.word);
+            // Reset slot
+            firstSlot.textContent = '?';
+            firstSlot.className = 'letter-slot'; // Reset classes
+            
+            // Select a new word
+            const availableWords = cvcWords.filter(w => w.word !== currentWord.word);
             shuffleArray(availableWords);
+            currentWord = availableWords[0] || cvcWords[0];
             
-            // Set the new current word
-            currentWord = availableWords[0] || blendWords[0];
-            
-            currentLetterIndex = 0;
             feedbackEl.textContent = '';
-            
-            // Update the score/difficulty status
             updateGameStatus();
 
             // Update image display
             imageBox.textContent = currentWord.emoji;
 
-            // Generate button choices (Target letters + distractors)
+            // Generate button choices (Target letter + 3 distractors)
             generateLetterButtons(currentWord.word);
         }
 
         // Function to create the set of clickable letter buttons
         function generateLetterButtons(targetWord) {
             letterButtonsContainer.innerHTML = '';
-            const correctLetters = targetWord.split('');
+            const correctLetter = targetWord[TARGET_INDEX];
 
-            // Determine number of total buttons based on difficulty
-            // Easy Mode: 4 correct letters + 4 distractors = 8 total buttons
-            // Hard Mode: 4 correct letters + 6 distractors = 10 total buttons
-            const numDistractors = (correctStreak >= DIFFICULTY_THRESHOLD) ? 6 : 4;
-            const totalButtons = WORD_LENGTH + numDistractors; 
+            // Easy mode: 1 correct letter + 3 distractors = 4 total buttons
+            const totalButtons = 4; 
 
-            // Generate a set of unique letters (correct + distractors)
             const allLetters = new Set();
-            correctLetters.forEach(letter => allLetters.add(letter));
+            allLetters.add(correctLetter);
 
             // Add distractors (random letters)
             const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             while (allLetters.size < totalButtons) {
                 const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
-                allLetters.add(randomLetter);
+                // Ensure the distractor isn't the correct letter
+                if (randomLetter !== correctLetter) {
+                    allLetters.add(randomLetter);
+                }
             }
 
             const buttonLetters = Array.from(allLetters);
-            // Shuffle the buttons
             shuffleArray(buttonLetters); 
 
             buttonLetters.forEach(letter => {
                 const button = document.createElement('button');
                 button.textContent = letter;
-                button.classList.add('letter-button', 'w-16', 'h-16', 'bg-amber-500', 'text-white', 'rounded-xl', 'text-3xl', 'font-bold', 'shadow-lg');
+                button.classList.add('letter-button', 'bg-red-400', 'text-white', 'rounded-xl', 'text-3xl', 'font-bold', 'shadow-md');
                 button.addEventListener('click', () => handleLetterClick(letter, button));
                 letterButtonsContainer.appendChild(button);
             });
@@ -257,51 +209,39 @@
         // --- EVENT HANDLER ---
 
         function handleLetterClick(clickedLetter, buttonElement) {
-            // Ensure audio starts on first click (required by browsers)
-            if (Tone.context.state !== 'running') {
-                Tone.start();
-            }
+            if (Tone.context.state !== 'running') { Tone.start(); }
             
-            if (currentLetterIndex >= WORD_LENGTH) return; // Word is already built
+            // Disable all buttons immediately after a click to prevent double clicks/cheating
+            Array.from(letterButtonsContainer.children).forEach(btn => btn.disabled = true);
 
-            const targetSlot = document.getElementById(`slot-${currentLetterIndex}`);
-            const correctLetter = currentWord.word[currentLetterIndex];
+            const correctLetter = currentWord.word[TARGET_INDEX];
 
-            // 1. Check if the letter is correct for the current slot
             if (clickedLetter === correctLetter) {
-                targetSlot.textContent = clickedLetter;
-                targetSlot.classList.add('correct-answer');
+                // CORRECT
+                firstSlot.textContent = clickedLetter;
+                firstSlot.classList.add('correct-answer');
                 playCorrectSound();
-                buttonElement.disabled = true; // Disable used button
-                buttonElement.classList.remove('bg-amber-500', 'shadow-lg');
-                buttonElement.classList.add('bg-green-600', 'opacity-50');
+                feedbackEl.textContent = "YES! " + currentWord.word + " starts with " + correctLetter + "!";
+                correctStreak++;
 
-                currentLetterIndex++;
-
-                // 2. Check for WIN condition
-                if (currentLetterIndex === WORD_LENGTH) {
-                    feedbackEl.textContent = "🥳 Perfect! The word is: " + currentWord.word;
-                    correctStreak++; // Increment streak
-                    // Automatically load the next problem after a short delay
-                    setTimeout(loadNewProblem, 2500);
-                }
+                setTimeout(() => {
+                    loadNewProblem();
+                }, 2000);
 
             } else {
-                // 3. Handle INCORRECT answer
+                // INCORRECT
                 playIncorrectSound();
-                feedbackEl.textContent = "Try again! That letter is not correct for this spot.";
-                
-                // Temporarily flash the incorrect button
-                buttonElement.classList.add('incorrect-answer');
-                
-                // Reset streak on error
+                feedbackEl.textContent = "Oops! Try again.";
                 correctStreak = 0; 
-                updateGameStatus(); // Update score/difficulty indicator immediately
+                updateGameStatus();
                 
-                // Flash the incorrect state and then reset the button's appearance
+                // Flash the incorrect button and re-enable buttons
+                buttonElement.classList.add('incorrect-answer');
                 setTimeout(() => {
                     buttonElement.classList.remove('incorrect-answer');
                     feedbackEl.textContent = '';
+                    // Re-enable all buttons for another attempt
+                    Array.from(letterButtonsContainer.children).forEach(btn => btn.disabled = false);
                 }, 750);
             }
         }
