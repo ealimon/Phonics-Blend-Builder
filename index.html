@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kindergarten Progressive Phonics Match (Final)</title>
+    <title>Kindergarten Progressive Phonics Match (Final Fix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -289,13 +289,15 @@
             });
         }
 
-        // --- EVENT HANDLER ---
+        // --- EVENT HANDLER (FIXED) ---
 
         function handleLetterClick(clickedLetter, buttonElement) {
             if (Tone.context.state !== 'running') { Tone.start(); }
             
+            // 1. Check if button is already disabled (prevent double clicks/stuck sequence)
             if (buttonElement.disabled) return;
             
+            // 2. Disable ALL buttons immediately
             Array.from(letterButtonsContainer.children).forEach(btn => btn.disabled = true);
 
             const correctLetter = currentWord.word[targetIndex];
@@ -334,10 +336,13 @@
                 // INCORRECT (FIXED LOGIC)
                 playIncorrectSound();
                 feedbackEl.textContent = "Oops! Try again.";
+                
                 correctStreak = 0; // Only the streak resets
                 updateGameStatus();
                 
                 buttonElement.classList.add('incorrect-answer');
+                
+                // After the error animation (750ms), re-enable the buttons
                 setTimeout(() => {
                     buttonElement.classList.remove('incorrect-answer');
                     feedbackEl.textContent = '';
