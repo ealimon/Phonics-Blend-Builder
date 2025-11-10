@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kindergarten Progressive Phonics Match (Soft Chime)</title>
+    <title>Kindergarten Progressive Phonics Match (Final)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -16,6 +16,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            transition: background-color 0.5s ease; /* For visual celebration flash */
         }
         .game-card {
             background-color: #ffffff;
@@ -53,6 +54,8 @@
             background-color: #ffe0b2;
             box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
             opacity: 0.6; 
+            /* Added transition properties for visual celebration */
+            transition: transform 0.2s ease-out, background-color 0.2s ease, opacity 0.5s ease;
         }
         .target-slot {
             opacity: 1.0;
@@ -101,6 +104,8 @@
     <div class="game-card">
         <h1 class="text-3xl font-bold text-gray-800 mb-4">Phonics Focus</h1>
         
+        <div id="goldStarsDisplay" class="text-2xl font-bold text-yellow-600 mb-4">⭐ Total Stars: 0</div>
+        
         <div id="scoreDisplay" class="score-display">Correct Streak: 0</div>
         <span id="stageIndicator" class="stage-indicator bg-indigo-200 text-indigo-800">Stage 1: Initial Sound</span>
 
@@ -122,7 +127,7 @@
     </div>
 
     <script>
-        // --- Game Data: CVC Words ---
+        // --- Game Data: Expanded CVC Words (Total 20) ---
         const cvcWords = [
             // Short A
             { word: "CAT", emoji: "🐈" }, { word: "BAG", emoji: "🎒" },
@@ -144,31 +149,41 @@
 
         // --- Audio Setup using Tone.js ---
         
-        // Success/Error sounds (kept the same)
-        const correctSynth = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 } }).toDestination();
+        // Error sound
         const incorrectSynth = new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.01, decay: 0.05, sustain: 0.01, release: 0.1 } }).toDestination();
-        function playCorrectChime() { const now = Tone.now(); correctSynth.triggerAttackRelease("C5", "8n", now); }
         function playIncorrectSound() { incorrectSynth.triggerAttackRelease("C3", "16n"); }
         
-        // UPDATED: PluckSynth for a softer, bell-like click
+        // Success Jingle
+        const correctSynth = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 } }).toDestination();
+        function playSuccessJingle() {
+            const now = Tone.now();
+            // E4, G4, C5 melody
+            correctSynth.triggerAttackRelease("E4", "8n", now);
+            correctSynth.triggerAttackRelease("G4", "8n", now + 0.15);
+            correctSynth.triggerAttackRelease("C5", "4n", now + 0.3);
+        }
+
+        // Letter Click (Soft Pluck/Chime)
         const clickSynth = new Tone.PluckSynth({
-            attackNoise: 1, // High attack noise makes it sound sharp and bell-like
+            attackNoise: 1, 
             dampening: 4000,
             resonance: 0.9
         }).toDestination();
         function playClickSound() {
-            clickSynth.triggerAttack("C5"); // Trigger a note for the pluck sound
+            clickSynth.triggerAttack("C5"); 
         }
 
         // --- Game State Variables and DOM Elements ---
         let currentWord = {};
-        let correctStreak = 0;
+        let correctStreak = 0; // Resets on error; used for stage progression
+        let goldStars = 0;   // Never resets; permanent accomplishment counter
         let targetIndex = 0; 
 
         const imageBox = document.getElementById('imageBox');
         const letterButtonsContainer = document.getElementById('letterButtons');
         const feedbackEl = document.getElementById('feedback');
         const scoreDisplayEl = document.getElementById('scoreDisplay');
+        const goldStarsDisplayEl = document.getElementById('goldStarsDisplay');
         const stageIndicatorEl = document.getElementById('stageIndicator');
         const slots = [document.getElementById('slot-0'), document.getElementById('slot-1'), document.getElementById('slot-2')];
 
@@ -178,15 +193,15 @@
             if (correctStreak >= 11) {
                 stageIndicatorEl.textContent = "Stage 3: Vowel Sound";
                 stageIndicatorEl.className = 'stage-indicator bg-green-200 text-green-800';
-                return 1; 
+                return 1; // Target middle vowel
             } else if (correctStreak >= 6) {
                 stageIndicatorEl.textContent = "Stage 2: Ending Sound";
                 stageIndicatorEl.className = 'stage-indicator bg-orange-200 text-orange-800';
-                return 2; 
+                return 2; // Target ending consonant
             } else {
                 stageIndicatorEl.textContent = "Stage 1: Initial Sound";
                 stageIndicatorEl.className = 'stage-indicator bg-indigo-200 text-indigo-800';
-                return 0; 
+                return 0; // Target initial consonant
             }
         }
         
@@ -216,6 +231,10 @@
             
             // Set up slots and highlight the target
             for (let i = 0; i < 3; i++) {
+                // Reset visual celebration styles
+                slots[i].style.transform = 'scale(1.0)';
+                slots[i].style.backgroundColor = '#ffe0b2'; // Slot default background
+                
                 slots[i].classList.remove('target-slot', 'correct-answer');
                 
                 if (i === targetIndex) {
@@ -239,6 +258,7 @@
             let choicePool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             
             if (targetIndex === 1) {
+                // Stage 3 uses only VOWELS as choices
                 choicePool = 'AEIOU';
             }
 
@@ -261,7 +281,7 @@
                 button.classList.add('letter-button', 'bg-red-400', 'text-white', 'rounded-xl', 'text-3xl', 'font-bold', 'shadow-md');
                 
                 button.addEventListener('click', () => {
-                    playClickSound(); // Play the new pluck/chime sound
+                    playClickSound(); // Play the soft click sound
                     handleLetterClick(letter, button);
                 });
                 
@@ -286,13 +306,27 @@
                 targetSlot.textContent = clickedLetter;
                 targetSlot.classList.add('correct-answer');
                 targetSlot.classList.remove('target-slot');
-                playCorrectChime();
+                playSuccessJingle();
                 
-                feedbackEl.textContent = `🥳 Correct! The word is ${currentWord.word}!`;
+                feedbackEl.textContent = `🥳 WOW! ${currentWord.word} is correct!`;
                 
+                // --- ACCOMPLISHMENT & VISUAL REWARDS ---
+                goldStars++;
+                goldStarsDisplayEl.textContent = `⭐ Total Stars: ${goldStars}`;
                 correctStreak++;
+                
+                // 1. Temporary Full-Screen Flash
+                document.body.style.backgroundColor = '#90ee90'; // Light Green Flash
+                
+                // 2. Word Focus & Gold Animation
+                slots.forEach(slot => {
+                    slot.style.transform = 'scale(1.1)'; // Grow
+                    slot.style.backgroundColor = '#ffd700'; // Gold color flash
+                });
 
+                // Reset animation and load next problem
                 setTimeout(() => {
+                    document.body.style.backgroundColor = '#ffccbc'; // Reset body background
                     loadNewProblem(); 
                 }, 2000); 
 
@@ -300,7 +334,7 @@
                 // INCORRECT
                 playIncorrectSound();
                 feedbackEl.textContent = "Oops! Try again.";
-                correctStreak = 0; 
+                correctStreak = 0; // Only the streak resets
                 updateGameStatus();
                 
                 buttonElement.classList.add('incorrect-answer');
